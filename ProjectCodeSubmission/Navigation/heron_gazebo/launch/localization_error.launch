@@ -1,0 +1,38 @@
+<launch>
+    <node pkg="heron_gazebo" type="localization_error" name="localization_error_1">
+        <remap from="estimate" to="odometry/filtered_map_1" />
+        <remap from="estimate/rpy" to="estimate/rpy1" />
+        <remap from="estimateError" to="estimateError_1" />
+    </node>
+
+    <node pkg="heron_gazebo" type="localization_error" name="localization_error_2">
+        <remap from="estimate" to="odometry/filtered_map_2" />
+        <remap from="estimate/rpy" to="estimate/rpy2" />
+        <remap from="estimateError" to="estimateError_2" />
+    </node>
+
+    <node pkg="heron_gazebo" type="localization_error" name="localization_error_3">
+        <remap from="estimate" to="odometry/filtered_map_3" />
+        <remap from="estimate/rpy" to="estimate/rpy3" />
+        <remap from="estimateError" to="estimateError_3" />
+    </node>
+
+    <node pkg="heron_gazebo" type="localization_error" name="localization_error_4">
+        <remap from="estimate" to="odometry/filtered_map_4" />
+        <remap from="estimate/rpy" to="estimate/rpy4" />
+        <remap from="estimateError" to="estimateError_4" />
+    </node>
+
+    <node pkg="heron_gazebo" type="localization_error" name="localization_error_5">
+        <remap from="estimate" to="odometry/filtered_map_5" />
+        <remap from="estimate/rpy" to="estimate/rpy5" />
+        <remap from="estimateError" to="estimateError_5" />
+    </node>
+
+    <node pkg="heron_gazebo" type="localization_error" name="localization_error_6">
+        <remap from="estimate" to="odometry/filtered_map_6" />
+        <remap from="estimate/rpy" to="estimate/rpy6" />
+        <remap from="estimateError" to="estimateError_6" />
+    </node>
+    
+</launch>

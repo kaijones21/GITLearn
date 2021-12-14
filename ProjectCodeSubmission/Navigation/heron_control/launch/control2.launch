@@ -1,0 +1,163 @@
+<launch>
+  <!-- Initiate Navsat transform node -->
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node2" respawn="true" output="screen">
+    <rosparam command="load" file="$(find heron_control)/config/navsat_config.yaml" />
+    <remap from="gps/fix" to="navsat2/fix" />
+    <remap from="imu/data" to="imu2/data" />
+    <remap from="odometry/gps" to="odometry/navsat2/gps" />
+    <rosparam param="datum" subst_value="True">[$(optenv GPS_DATUM 43.4720948, -80.5592608), 0.0]</rosparam>
+    <param name="wait_for_datum" value="$(eval optenv('GPS_DATUM') != '')" />
+  </node>
+
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node3" respawn="true" output="screen">
+    <rosparam command="load" file="$(find heron_control)/config/navsat_config.yaml" />
+    <remap from="gps/fix" to="navsat3/fix" />
+    <remap from="imu/data" to="imu3/data" />
+    <remap from="odometry/gps" to="odometry/navsat3/gps" />
+    <rosparam param="datum" subst_value="True">[$(optenv GPS_DATUM 43.4720948, -80.5592608), 0.0]</rosparam>
+    <param name="wait_for_datum" value="$(eval optenv('GPS_DATUM') != '')" />
+  </node>
+
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform_node4" respawn="true" output="screen">
+    <rosparam command="load" file="$(find heron_control)/config/navsat_config.yaml" />
+    <remap from="gps/fix" to="navsat4/fix" />
+    <remap from="imu/data" to="imu4/data" />
+    <remap from="odometry/gps" to="odometry/navsat4/gps" />
+    <rosparam param="datum" subst_value="True">[$(optenv GPS_DATUM 43.4720948, -80.5592608), 0.0]</rosparam>
+    <param name="wait_for_datum" value="$(eval optenv('GPS_DATUM') != '')" />
+  </node>
+
+  <!-- Load params for robot_localization -->
+  <rosparam command="load" file="$(find heron_control)/config/robot_localization2.yaml" />
+
+  <group>
+    <!-- Situation 1-->
+    <!-- Initiate EKF node for odom frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom_1" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_odom_1"/>
+    </node>
+
+    <!-- Initiate EKF node for global frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map_1" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_map_1"/>
+    </node>
+  </group>
+
+  <group>
+    <!-- Situation 2-->
+    <!-- Initiate EKF node for odom frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom_2" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_odom_2"/>
+    </node>
+
+    <!-- Initiate EKF node for global frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map_2" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_map_2"/>
+    </node>
+  </group>
+
+  <group>
+    <!-- Situation 3-->
+    <!-- Initiate EKF node for odom frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom_3" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_odom_3"/>
+    </node>
+
+    <!-- Initiate EKF node for global frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map_3" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_map_3"/>
+    </node>
+  </group>
+
+  <group>
+    <!-- Situation 4-->
+    <!-- Initiate EKF node for odom frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom_4" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_odom_4"/>
+    </node>
+
+    <!-- Initiate EKF node for global frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map_4" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_map_4"/>
+    </node>
+  </group>
+
+  <group>
+    <!-- Situation 5-->
+    <!-- Initiate EKF node for odom frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom_5" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_odom_5"/>
+    </node>
+
+    <!-- Initiate EKF node for global frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map_5" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_map_5"/>
+    </node>
+  </group>
+
+  <group>
+    <!-- Situation 6-->
+    <!-- Initiate EKF node for odom frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom_6" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_odom_6"/>
+    </node>
+
+    <!-- Initiate EKF node for global frame -->
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map_6" clear_params="true">
+        <remap from="odometry/filtered" to="odometry/filtered_map_6"/>
+    </node>
+  </group>
+
+  <!-- Run nodes for getting velocity covariance -->
+  <node pkg="heron_control" type="vel_cov" name="navsat_vel_cov2">
+      <remap from="navsat/vel" to="navsat2/vel" />
+      <remap from="navsat/fix" to="navsat2/fix" />
+      <remap from="navsat/vel_cov" to="navsat2/vel_cov" />
+  </node>
+  <node pkg="heron_control" type="vel_cov" name="navsat_vel_cov3">
+      <remap from="navsat/vel" to="navsat3/vel" />
+      <remap from="navsat/fix" to="navsat3/fix" />
+      <remap from="navsat/vel_cov" to="navsat3/vel_cov" />
+  </node>
+  <node pkg="heron_control" type="vel_cov" name="navsat_vel_cov4">
+      <remap from="navsat/vel" to="navsat4/vel" />
+      <remap from="navsat/fix" to="navsat4/fix" />
+      <remap from="navsat/vel_cov" to="navsat4/vel_cov" />
+  </node>
+
+  <!-- Run nodes for converting estimation orientations to rpy -->
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="filter_rpy_translator1">
+      <remap from="estimate/rpy" to="estimate/rpy1" />
+      <remap from="estimate" to="odometry/filtered_map_1" />
+  </node>
+
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="filter_rpy_translator2">
+      <remap from="estimate/rpy" to="estimate/rpy2" />
+      <remap from="estimate" to="odometry/filtered_map_2" />
+  </node>
+
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="filter_rpy_translator3">
+      <remap from="estimate/rpy" to="estimate/rpy3" />
+      <remap from="estimate" to="odometry/filtered_map_3" />
+  </node>
+
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="filter_rpy_translator4">
+      <remap from="estimate/rpy" to="estimate/rpy4" />
+      <remap from="estimate" to="odometry/filtered_map_4" />
+  </node>
+
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="filter_rpy_translator5">
+      <remap from="estimate/rpy" to="estimate/rpy5" />
+      <remap from="estimate" to="odometry/filtered_map_5" />
+  </node>
+
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="filter_rpy_translator6">
+      <remap from="estimate/rpy" to="estimate/rpy6" />
+      <remap from="estimate" to="odometry/filtered_map_6" />
+  </node>
+
+  <node pkg="heron_gazebo" type="filter_rpy_translator" name="groundTruth_rpy">
+      <remap from="estimate/rpy" to="pose_GT/rpy" />
+      <remap from="estimate" to="pose_gt" />
+  </node>
+</launch> 

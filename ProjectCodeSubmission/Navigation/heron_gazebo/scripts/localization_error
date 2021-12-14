@@ -1,0 +1,111 @@
+#!/usr/bin/env python
+import rospy 
+from geometry_msgs.msg import Vector3Stamped
+from nav_msgs.msg import Odometry
+
+class LocalizationError:
+
+    def __init__(self):
+        # Get the rate to publish error at by using same rate of ekf
+        if rospy.has_param('/ekf_se_map_1/frequency'):
+            rate = rospy.get_param('ekf_se_map_1/frequency')
+        else:
+            rate = 20
+        self.timer = rospy.Rate(rate)
+
+        # Create Subscribers
+        rospy.Subscriber("/pose_gt", Odometry, self.groundTruth_cb)
+        rospy.Subscriber("/pose_GT/rpy", Vector3Stamped, self.groundTruthRpy_cb)
+        rospy.Subscriber("/estimate", Odometry, self.localizationEstimate_cb)
+        rospy.Subscriber("/estimate/rpy", Vector3Stamped, self.localizationEstimateRpy_cb)
+
+        # Create Publishers
+        self.error_publisher = rospy.Publisher("/estimateError", Odometry, queue_size=10)
+
+        # Dictionaries to hold data
+        self.localizationEstimate = {'Pose': {'Position': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+                                              'Orientation': {'x': 0.0, 'y': 0.0, 'z': 0.0}
+                                    },
+                                    'Twist': {'Linear': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+                                              'Angular': {'x': 0.0, 'y': 0.0, 'z': 0.0}
+                                    }
+        }
+        self.groundTruth = {'Pose': {'Position': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+                                     'Orientation': {'x': 0.0, 'y': 0.0, 'z': 0.0}
+                                    },
+                            'Twist': {'Linear': {'x': 0.0, 'y': 0.0, 'z': 0.0},
+                                      'Angular': {'x': 0.0, 'y': 0.0, 'z': 0.0}
+                                    }
+        }
+
+    def localizationEstimate_cb(self, msg):
+        self.localizationEstimate['Pose']['Position']['x'] = msg.pose.pose.position.x
+        self.localizationEstimate['Pose']['Position']['y'] = msg.pose.pose.position.y
+        self.localizationEstimate['Pose']['Position']['z'] = msg.pose.pose.position.z
+
+        self.localizationEstimate['Twist']['Linear']['x'] = msg.twist.twist.linear.x
+        self.localizationEstimate['Twist']['Linear']['y'] = msg.twist.twist.linear.y
+        self.localizationEstimate['Twist']['Linear']['z'] = msg.twist.twist.linear.z
+
+        self.localizationEstimate['Twist']['Angular']['x'] = msg.twist.twist.angular.x
+        self.localizationEstimate['Twist']['Angular']['y'] = msg.twist.twist.angular.y
+        self.localizationEstimate['Twist']['Angular']['z'] = msg.twist.twist.angular.z
+
+        self.calculateError()
+
+    def localizationEstimateRpy_cb(self, msg):
+        self.localizationEstimate['Pose']['Orientation']['x'] = msg.vector.x
+        self.localizationEstimate['Pose']['Orientation']['y'] = msg.vector.y
+        self.localizationEstimate['Pose']['Orientation']['z'] = msg.vector.z
+
+    def groundTruth_cb(self, msg):
+        self.groundTruth['Pose']['Position']['x'] = msg.pose.pose.position.x
+        self.groundTruth['Pose']['Position']['y'] = msg.pose.pose.position.y
+        self.groundTruth['Pose']['Position']['z'] = msg.pose.pose.position.z
+
+        self.groundTruth['Twist']['Linear']['x'] = msg.twist.twist.linear.x
+        self.groundTruth['Twist']['Linear']['y'] = msg.twist.twist.linear.y
+        self.groundTruth['Twist']['Linear']['z'] = msg.twist.twist.linear.z
+
+        self.groundTruth['Twist']['Angular']['x'] = msg.twist.twist.angular.x
+        self.groundTruth['Twist']['Angular']['y'] = msg.twist.twist.angular.y
+        self.groundTruth['Twist']['Angular']['z'] = msg.twist.twist.angular.z
+
+    def groundTruthRpy_cb(self, msg):
+        self.groundTruth['Pose']['Orientation']['x'] = msg.vector.x
+        self.groundTruth['Pose']['Orientation']['y'] = msg.vector.y
+        self.groundTruth['Pose']['Orientation']['z'] = msg.vector.z
+
+    def calculateError(self):
+        error = Odometry()
+        error.header.frame_id = 'world'
+        error.child_frame_id = 'base_link'
+        error.header.stamp = rospy.Time.now()
+
+        error.pose.pose.position.x = self.localizationEstimate['Pose']['Position']['x'] - self.groundTruth['Pose']['Position']['x']
+        error.pose.pose.position.y = self.localizationEstimate['Pose']['Position']['y'] - self.groundTruth['Pose']['Position']['y']
+        error.pose.pose.position.z = self.localizationEstimate['Pose']['Position']['z'] - self.groundTruth['Pose']['Position']['z']
+        error.pose.pose.orientation.x = self.localizationEstimate['Pose']['Orientation']['x'] - self.groundTruth['Pose']['Orientation']['x']
+        error.pose.pose.orientation.y = self.localizationEstimate['Pose']['Orientation']['y'] - self.groundTruth['Pose']['Orientation']['y']
+        error.pose.pose.orientation.z = self.localizationEstimate['Pose']['Orientation']['z'] - self.groundTruth['Pose']['Orientation']['z']
+        error.twist.twist.linear.x = self.localizationEstimate['Twist']['Linear']['x'] - self.groundTruth['Twist']['Linear']['x']
+        error.twist.twist.linear.y = self.localizationEstimate['Twist']['Linear']['y'] - self.groundTruth['Twist']['Linear']['y']
+        error.twist.twist.linear.z = self.localizationEstimate['Twist']['Linear']['z'] - self.groundTruth['Twist']['Linear']['z']
+        error.twist.twist.angular.x = self.localizationEstimate['Twist']['Angular']['x'] - self.groundTruth['Twist']['Angular']['x']
+        error.twist.twist.angular.y = self.localizationEstimate['Twist']['Angular']['y'] - self.groundTruth['Twist']['Angular']['y']
+        error.twist.twist.angular.z = self.localizationEstimate['Twist']['Angular']['z'] - self.groundTruth['Twist']['Angular']['z']
+
+        self.error_publisher.publish(error)
+        self.timer.sleep()
+
+
+if __name__ == '__main__':
+    try: 
+        # Initialize node
+        rospy.init_node('estimateError')
+        errorCalculator = LocalizationError()
+        errorCalculator.calculateError()
+        rospy.spin()
+
+    except rospy.ROSInterruptException:
+        pass
