@@ -63,11 +63,22 @@ This node calculates the error between the localization estimate and the ground 
 Configuration file to configure parameters for the teleop_joy node used to control the Heron with a joystick. 
 
 ### navsat_config.yaml 
-Modified to not include the UTM transform and publish as parent frame. This is to link the Gazebo world frame as the "map" frame for the EKF nodes. 
+Modified to not include the UTM transform and publish as parent frame. This is to link the Gazebo world frame as the "map" frame for the EKF nodes. Parameters changed from default config file are: 
+
+- `broadcast_utm_transform`: false
+- `broadcast_utm_transform_as_parent_frame`: false
 
 ### robot_localization2.yaml 
 Configuration file to configure all EKF nodes used for each situation described in the paper. This file follows the recommended convention of using one "odom" frame and one "map" frame for each EKF estimate. 
 
+- Inputs: 
+    - `odomX`: GPS sensor measurement topic
+    - `twistX`: Velocity from GPS sensors topic
+    - `imu0`: IMU sensor measurement topic
+
+- `ekf_se_map_x`: EKF state estimator to transform estimates from odom frame to map frame (in this case, it's from odom to world frame)
+- `ekf_se_odom_x`: EKF state estimator to estimate robot state in odom frame. Also transforms from robot frame to odom frame. 
+ 
 ### control2.launch
 Used to launch the Navsat transform nodes for the additional GPS and IMU sensors, EKF nodes, the Navsat velocity covariance nodes, and quaternion-to-rpy conversion nodes for the EKFs. 
 
